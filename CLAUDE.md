@@ -2,8 +2,15 @@
 
 ## Project
 
-Stopwatch dashboard app. Reads session data logged by a Bash script and
+Activity and work tracker. Reads session data logged by a Bash script and
 visualizes it in a Next.js web app (later PWA + Apple Watch).
+
+Tracks two kinds of activity:
+- **Work sessions** — freelance dev work per client/project, with issue references,
+  for client billing and reporting
+- **Health/sport sessions** — rowing, stretching, etc.
+
+Later: Pomodoro, GitHub integration, PDF export for client invoicing.
 
 ---
 
@@ -23,11 +30,28 @@ stopwatch-app/          ← this repo (Next.js)
 {
   "sessions": [
     {
+      "tag": "sherpath",
+      "date": "2026-04-15",
+      "start": "09:00:00",
+      "end": "11:30:00",
+      "duration_seconds": 5400,
+      "intervals": [
+        { "start": "09:00:00", "end": "09:45:00" },
+        { "start": "10:00:00", "end": "11:30:00" }
+      ],
+      "meta": {
+        "issue": "#42"
+      },
+      "note": "Login screen redesign",
+      "laps_seconds": []
+    },
+    {
       "tag": "dehnen",
       "date": "2026-04-13",
       "start": "09:54:25",
       "end": "10:06:48",
       "duration_seconds": 641.98,
+      "intervals": [],
       "meta": {
         "zugkraft": 2,
         "laenge_cm": 17.2
@@ -39,9 +63,16 @@ stopwatch-app/          ← this repo (Next.js)
 }
 ```
 
-- `meta` fields vary by tag — treat as `Record`
-- `laps_seconds` is an empty array if no laps were recorded
-- `note` is `string | null`
+### Field notes
+
+- `tag` — project/client name (e.g. `"sherpath"`) or activity (e.g. `"dehnen"`, `"rudern"`)
+- `intervals` — list of `{ start, end }` time strings; empty if no pause was taken.
+  `duration_seconds` = sum of interval durations (real active time, pauses excluded).
+  If `intervals` is empty, `duration_seconds` = wall-clock time from `start` to `end`.
+- `meta` — tag-specific fields, treat as `Record<string, unknown>`.
+  For work sessions: `{ issue: "#42" }`. For sport: varies (e.g. `zugkraft`, `laenge_cm`).
+- `note` — free-text description, `string | null`. For work sessions: task description.
+- `laps_seconds` — legacy field, ignore. Will be removed from future entries.
 - File path (relative to project root): `../scripts/stopwatch/sessions.json`
 
 ---
@@ -105,9 +136,20 @@ One entry per completed step. Each entry:
 
 - [x] Repo exists
 - [x] sessions.json einlesen und typisieren (`lib/types.ts`, `lib/sessions.ts`)
-- [ ] Dashboard: Wochenrückblick (nach Tag + Tageszusammenfassung)
-- [ ] Dashboard: Charts (recharts, later)
-- [ ] PWA setup (manifest + service worker)
+- [x] Types aktualisieren: `intervals` rein, `laps_seconds` optional, `tag` nullable, `meta` gelockert
+- [x] Dashboard: Tagesübersicht (alle Sessions eines Tages, Gesamtzeit pro Tag)
+- [x] Filter nach Tag — Dashboard gefiltert auf einen Tag (z.B. nur "sherpath")
+- [x] Session starten/stoppen — Timer im Browser, schreibt in sessions.json via API Route
+- [x] Meta-Felder erfassen — Formular je nach Tag (analog zu session-types.json im Script)
+- [x] Pause/Resume im Browser-Timer
+- [x] Note-Eingabe im Timer
+- [ ] Work-Report: Gesamtstunden + Issue-Liste pro Kunde (later)
+- [ ] PDF-Export: Monatsübersicht + Detailliste pro Kunde (later)
+- [ ] Dashboard: Wochenrückblick (later)
+- [ ] Charts (recharts, later)
+- [ ] Pomodoro (later)
+- [ ] GitHub-Anbindung für Issue-Namen (later)
+- [ ] PWA setup (manifest + service worker, later)
 
 ---
 
@@ -115,4 +157,4 @@ One entry per completed step. Each entry:
 
 - Database / SQLite / Postgres migration
 - Apple Watch / native Swift
-- Write access to sessions.json from the web app
+- Write access to sessions.json from the web app (Bash script handles recording)
