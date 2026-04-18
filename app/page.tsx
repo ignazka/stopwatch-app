@@ -7,6 +7,7 @@ import { Timer } from './components/Timer';
 import { View } from '@/lib/types';
 import { ViewTabs } from './components/ViewTabs';
 import { isView } from '@/lib/typeGuards';
+import { TabsContent } from '@/components/ui/tabs';
 
 export default async function Home({
   searchParams,
@@ -33,23 +34,21 @@ export default async function Home({
   const groupedSessionsByDate = groupByDate(filteredSessions);
   const sortedArrayByDate = Object.keys(groupedSessionsByDate).sort().reverse();
   return (
-    <div className='bg-zinc-50 font-sans dark:bg-zinc-950'>
-      <main className='w-full max-w-3xl py-32 px-16 sm:items-start'>
-        <ViewTabs currentTag={tag} currentView={guardedView} />
+    <main className='w-full max-w-3xl py-32 px-16 sm:items-start'>
+      <ViewTabs currentTag={tag} currentView={guardedView} />
 
-        <Timer types={sessionTypesRAW} />
-        {allTags.map((t) => (
-          <TagFilterButton key={t} tag={t} />
-        ))}
-        <h1>Alle Sessions</h1>
-        {sortedArrayByDate.map((date) => (
-          <DayCard
-            key={date}
-            date={date}
-            sessions={groupedSessionsByDate[date]}
-          />
-        ))}
-      </main>
-    </div>
+      <Timer types={sessionTypesRAW} />
+      {allTags.map((t) => (
+        <TagFilterButton key={t} tag={t} />
+      ))}
+      <h1>Alle Sessions</h1>
+      {sortedArrayByDate.map((date) => (
+        <DayCard
+          key={date}
+          date={date}
+          sessions={groupedSessionsByDate[date]}
+        />
+      ))}
+    </main>
   );
 }
