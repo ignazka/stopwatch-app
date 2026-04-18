@@ -13,7 +13,7 @@ export function DayCard({
   }, 0);
 
   return (
-    <div className='p-2 w-max mb-5 bg-gray-900'>
+    <div className='p-2 w-max mb-5 bg-zinc-800'>
       <span className=' text-fuchsia-200'>{date}</span>
       <ul className='m-2 flex flex-col w-100 '>
         {sessions.map((s, idx) => (

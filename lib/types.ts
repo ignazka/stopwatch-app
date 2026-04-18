@@ -27,3 +27,13 @@ export interface SessionType {
   fields: SessionTypeField[];
 }
 export type SessionTypes = Record<string, SessionType>;
+
+// VIEW
+export const VIEWS = ['day', 'week', 'month'] as const;
+export type View = (typeof VIEWS)[number];
+
+export const VIEW_LABELS: Record<View, string> = {
+  day: 'Tag',
+  week: 'Woche',
+  month: 'Monat',
+};

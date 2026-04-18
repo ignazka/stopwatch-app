@@ -4,13 +4,21 @@ import { groupByDate } from '@/lib/groupByDate';
 import { filterSessionsByTag } from '@/lib/filterSessionsByTag';
 import { TagFilterButton } from './components/TagFilterButton';
 import { Timer } from './components/Timer';
+import { View } from '@/lib/types';
+import { ViewTabs } from './components/ViewTabs';
+import { isView } from '@/lib/typeGuards';
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string }>;
+  searchParams: Promise<{
+    tag?: string;
+    view?: string;
+  }>;
 }) {
-  const { tag } = await searchParams;
+  const { tag, view } = await searchParams;
+
+  const guardedView: View = view && isView(view) ? view : 'week';
 
   const sessionsRAW = getSessions();
   const sessionTypesRAW = getSessionTypes();
@@ -25,8 +33,10 @@ export default async function Home({
   const groupedSessionsByDate = groupByDate(filteredSessions);
   const sortedArrayByDate = Object.keys(groupedSessionsByDate).sort().reverse();
   return (
-    <div className='bg-zinc-50 font-sans dark:bg-black'>
-      <main className='w-full max-w-3xl py-32 px-16 bg-white dark:bg-black sm:items-start'>
+    <div className='bg-zinc-50 font-sans dark:bg-zinc-950'>
+      <main className='w-full max-w-3xl py-32 px-16 sm:items-start'>
+        <ViewTabs currentTag={tag} currentView={guardedView} />
+
         <Timer types={sessionTypesRAW} />
         {allTags.map((t) => (
           <TagFilterButton key={t} tag={t} />

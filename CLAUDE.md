@@ -143,9 +143,11 @@ One entry per completed step. Each entry:
 - [x] Meta-Felder erfassen — Formular je nach Tag (analog zu session-types.json im Script)
 - [x] Pause/Resume im Browser-Timer
 - [x] Note-Eingabe im Timer
+- [ ] Dashboard: Wochen- und Monatsansicht (Tabs: Tag / Woche / Monat, Vor/Zurück-Navigation)
+  - Wochenansicht: Gesamtzeit pro Tag, Wochensumme
+  - Monatsansicht: Gesamtzeit pro Woche, Monatssumme
 - [ ] Work-Report: Gesamtstunden + Issue-Liste pro Kunde (later)
 - [ ] PDF-Export: Monatsübersicht + Detailliste pro Kunde (later)
-- [ ] Dashboard: Wochenrückblick (later)
 - [ ] Charts (recharts, later)
 - [ ] Pomodoro (later)
 - [ ] GitHub-Anbindung für Issue-Namen (later)
