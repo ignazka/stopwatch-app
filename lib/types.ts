@@ -37,3 +37,26 @@ export const VIEW_LABELS: Record<View, string> = {
   week: 'Woche',
   month: 'Monat',
 };
+
+export interface DehnenMeasurement {
+  nbp: number;
+  bp: number;
+}
+
+export interface DehnenImages {
+  laenge_s_nbp?: string;
+  laenge_s_bp?: string;
+  laenge_e_nbp?: string;
+  laenge_e_bp?: string;
+}
+
+export interface DehnenEntry {
+  month: string; // "YYYY-MM"
+  laenge_s: DehnenMeasurement;
+  laenge_e: DehnenMeasurement;
+  images?: DehnenImages;
+}
+
+export interface DehnenProgressFile {
+  entries: DehnenEntry[];
+}
