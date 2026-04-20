@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionTypes } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 function formatElapsed(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
@@ -161,15 +162,16 @@ export function Timer({ types }: { types: SessionTypes }) {
   }, [status, selectedTag, meta, note]);
 
   return (
-    <div>
+    <div className='mb-4'>
       {/* Tag und Meta-Felder nur im idle-Zustand */}
       {status === 'idle' && (
-        <>
+        <div className='flex flex-col'>
           <select
             value={selectedTag}
             onChange={(e) => handleTagChange(e.target.value)}
+            className='mr-2'
           >
-            <option value=''>— Tag wählen —</option>
+            <option value=''>— Preset wählen —</option>
             {Object.keys(types).map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -216,30 +218,41 @@ export function Timer({ types }: { types: SessionTypes }) {
             );
           })}
 
-          <input
+          {/* <input
             type='text'
             placeholder='Notiz (optional)'
             value={note ?? ''}
             onChange={(e) => setNote(e.target.value)}
-          />
-        </>
+          /> */}
+        </div>
       )}
 
-      <div>{formatElapsed(elapsed)}</div>
+      <div className='text-3xl pt-10 pb-10 flex justify-center items-center'>
+        <span className='mr-10'>{formatElapsed(elapsed)}</span>
 
-      {status === 'idle' && <button onClick={handleStart}>Start</button>}
-      {status === 'running' && (
-        <>
-          <button onClick={handlePause}>Pause</button>
-          <button onClick={handleStop}>Stop</button>
-        </>
-      )}
-      {status === 'paused' && (
-        <>
-          <button onClick={handleResume}>Weiter</button>
-          <button onClick={handleStop}>Stop</button>
-        </>
-      )}
+        {status === 'idle' && (
+          <Button
+            size='lg'
+            variant='destructive'
+            className='scale-150'
+            onClick={handleStart}
+          >
+            Start
+          </Button>
+        )}
+        {status === 'running' && (
+          <>
+            <Button onClick={handlePause}>Pause</Button>
+            <Button onClick={handleStop}>Stop</Button>
+          </>
+        )}
+        {status === 'paused' && (
+          <>
+            <Button onClick={handleResume}>Weiter</Button>
+            <Button onClick={handleStop}>Stop</Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

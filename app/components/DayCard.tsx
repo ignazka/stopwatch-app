@@ -20,17 +20,17 @@ export function DayCard({
   }, 0);
 
   return (
-    <Card className='mb-5'>
-      <CardHeader>{date}</CardHeader>
+    <Card className='mb-4 font-thin w-120'>
+      <CardHeader className='text-foreground text-[1.15em]'>{date}</CardHeader>
       <CardContent>
         <Table>
-          <TableBody className={``}>
+          <TableBody>
             {sessions.map((s) => (
               <TableRow key={s.start}>
                 <TableCell>{s.start.slice(0, 5)}</TableCell>
 
                 <TableCell>
-                  {s.tag ?? <span className=''>{`[kein tag]`}</span>}
+                  {s.tag ?? <span className='font-mono'>{`[kein tag]`}</span>}
                 </TableCell>
                 <TableCell>{formatDuration(s.duration_seconds)}</TableCell>
               </TableRow>
@@ -40,8 +40,10 @@ export function DayCard({
       </CardContent>
 
       <CardFooter>
-        {' '}
-        Gesamtzeit: <span className='font-bold'>{formatDuration(total)}</span>
+        Gesamtzeit:
+        <span className='ml-2 font-normal text-[1.15em]'>
+          {formatDuration(total)}
+        </span>
       </CardFooter>
     </Card>
   );
