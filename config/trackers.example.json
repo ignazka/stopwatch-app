@@ -1,0 +1,15 @@
+{
+  "trackers": [
+    {
+      "name": "my-tracker",
+      "label": "My Tracker",
+      "interval": "monthly",
+      "available_from_day": 19,
+      "fields": [
+        { "key": "value_a", "label": "Value A", "type": "number" },
+        { "key": "value_b", "label": "Value B", "type": "number" },
+        { "key": "notes", "label": "Notes", "type": "text" }
+      ]
+    }
+  ]
+}

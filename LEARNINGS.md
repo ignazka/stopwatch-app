@@ -178,3 +178,186 @@ type TimerStatus = 'idle' | 'running' | 'paused';
 - `startTimestamp` als `useRef` (nicht State) — Änderung soll keinen Re-Render auslösen
 - `intervals.current[last].end = nowTimeString()` mutiert das Array direkt — bei refs ist das okay, kein `setState` nötig
 - `!` nach `.current` = Non-null assertion — sagt TypeScript "dieser Wert ist hier garantiert nicht null"
+
+---
+
+## 2026-04-21 — Refactor: Spezifisches Feature zu generischem System
+
+**Was wir gebaut haben:** Den hardcodierten Dehnen-Tracker in ein konfigurierbares, generisches Tracker-System umgebaut, das über eine JSON-Config-Datei gesteuert wird.
+
+**Key concept:** Wenn eine Funktion mehrfach gebraucht wird oder persönliche Daten enthält, lohnt es sich, sie zu generalisieren — Konfiguration außerhalb des Codes zu halten statt sie hardcoded einzubauen.
+
+---
+
+### Schritt 1: Problem erkennen
+
+Der alte Code hatte alles hardcoded:
+- Komponenten `DehnenForm`, `DehnenHistory`, `DehnenReminder` kannten nur Dehnen-Felder
+- Route `/dehnen` war fest verdrahtet
+- Feldnamen wie `laenge_s_nbp` lagen direkt im Quellcode — damit war im Repo sichtbar, was getrackt wird
+
+**Ziel:** Beliebige Tracker über eine externe Config-Datei definierbar machen, ohne Code zu ändern.
+
+---
+
+### Schritt 2: Config-Schema entwerfen
+
+Erst überlegen, wie die Konfiguration aussehen soll — bevor man Code schreibt:
+
+```json
+{
+  "trackers": [
+    {
+      "name": "my-tracker",
+      "label": "My Tracker",
+      "interval": "monthly",
+      "available_from_day": 19,
+      "fields": [
+        { "key": "value_a", "label": "Value A", "type": "number" },
+        { "key": "notes",   "label": "Notes",   "type": "text"   }
+      ]
+    }
+  ]
+}
+```
+
+Wichtig: `config/trackers.json` wird gitignored, `config/trackers.example.json` kommt ins Repo. So enthält das Repo keine persönlichen Daten.
+
+---
+
+### Schritt 3: TypeScript-Typen ableiten
+
+Aus dem Config-Schema TypeScript-Interfaces ableiten:
+
+```ts
+export type TrackerFieldType = 'number' | 'text';
+
+export interface TrackerField {
+  key: string;
+  label: string;
+  type: TrackerFieldType;
+}
+
+export interface TrackerConfig {
+  name: string;
+  label: string;
+  interval: 'daily' | 'monthly';
+  available_from_day?: number; // optional
+  fields: TrackerField[];
+}
+
+export interface TrackerEntry {
+  id: string;
+  period: string; // "YYYY-MM" oder "YYYY-MM-DD"
+  fields: Record<string, number | string | null>;
+}
+```
+
+`Record<string, number | string | null>` statt fester Felder — weil zur Compile-Zeit nicht bekannt ist, welche Felder ein Tracker hat.
+
+---
+
+### Schritt 4: Datenschicht generalisieren (`lib/trackers.ts`)
+
+Die alten `getDehnenProgress()` / `saveDehnenProgress()` Funktionen wurden zu generischen Funktionen:
+
+```ts
+// Config lesen
+export function getTrackerConfigs(): TrackerConfig[] {
+  if (!fs.existsSync(CONFIG_PATH)) return [];
+  return (JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')) as TrackersFile).trackers;
+}
+
+// Daten lesen — Dateiname dynamisch aus tracker name
+export function readTrackerEntries(name: string): TrackerFile {
+  const filePath = path.resolve(process.cwd(), `data/tracker-${name}.json`);
+  if (!fs.existsSync(filePath)) return { entries: [] };
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as TrackerFile;
+}
+```
+
+Jeder Tracker bekommt seine eigene Datei: `data/tracker-{name}.json`. Das `data/`-Verzeichnis ist komplett gitignored.
+
+---
+
+### Schritt 5: API Route dynamisch machen
+
+Statt `/api/dehnen-progress` gibt es jetzt `/api/tracker/[name]` — ein Next.js Dynamic Route Segment:
+
+```ts
+// app/api/tracker/[name]/route.ts
+export async function POST(req, { params }) {
+  const { name } = await params;
+  const config = getTrackerConfig(name);
+  if (!config) return Response.json({ message: 'Not found' }, { status: 404 });
+
+  // Zod-Schema dynamisch aus der Config aufbauen
+  const fieldSchema = Object.fromEntries(
+    config.fields.map((f) => [
+      f.key,
+      f.type === 'number' ? z.number() : z.string().nullable(),
+    ])
+  );
+  // ...
+}
+```
+
+`Object.fromEntries` + `map` baut das Zod-Validierungsschema zur Laufzeit — basierend auf der Config, nicht auf hardcodierten Feldern.
+
+---
+
+### Schritt 6: Komponenten generisch machen
+
+`DehnenForm` wurde zu `TrackerForm` — bekommt `config: TrackerConfig` als Prop und rendert die Felder dynamisch:
+
+```tsx
+{config.fields.map((f) => (
+  <input
+    key={f.key}
+    type={f.type === 'number' ? 'number' : 'text'}
+    // ...
+  />
+))}
+```
+
+Statt vier hardcodierter Inputs für `laenge_s_nbp` etc. — beliebig viele Felder aus der Config.
+
+---
+
+### Schritt 7: Reminder generalisieren
+
+`DehnenReminder` kannte nur einen Tracker. `TrackerReminder` bekommt eine Liste aller Tracker bei denen der Eintrag fehlt:
+
+```tsx
+// In page.tsx: alle monatlichen Tracker prüfen
+const missingTrackers = trackerConfigs
+  .filter((t) => t.interval === 'monthly')
+  .filter((t) => t.available_from_day == null || currentDay >= t.available_from_day)
+  .filter((t) => !readTrackerEntries(t.name).entries.some((e) => e.period === currentMonth))
+  .map((t) => ({ name: t.name, label: t.label }));
+```
+
+---
+
+### Schritt 8: Dynamische Page-Route
+
+`/app/dehnen/page.tsx` → `/app/tracker/[name]/page.tsx`:
+
+```tsx
+export default async function TrackerPage({ params }) {
+  const { name } = await params;
+  const config = getTrackerConfig(name);
+  if (!config) notFound(); // 404 bei unbekanntem Tracker
+  // ...
+}
+```
+
+`notFound()` ist eine Next.js-Funktion die automatisch die 404-Seite zeigt.
+
+---
+
+**Gotchas / notes:**
+- `config/trackers.json` gitignoren — sonst sind persönliche Tracker-Namen im Repo sichtbar
+- `data/` komplett gitignoren, nicht nur einzelne Dateien — sonst vergisst man neue Tracker-Dateien
+- Zod-Schema dynamisch aufbauen funktioniert, aber `result.data.fields` hat Typ `Record<string, unknown>` — ein Cast auf `Record<string, number | string | null>` ist nötig, da Zod den Typ nicht vollständig ableiten kann wenn das Schema zur Laufzeit gebaut wird
+- Bestehende Daten vor dem Refactor sichern — leere JSON-Dateien verliert man nichts, aber bei echten Daten müsste man das alte Format manuell ins neue migrieren

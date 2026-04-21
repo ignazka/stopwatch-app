@@ -38,27 +38,34 @@ export const VIEW_LABELS: Record<View, string> = {
   month: 'Monat',
 };
 
-export interface DehnenMeasurement {
-  nbp: number;
-  bp: number;
+export type TrackerFieldType = 'number' | 'text';
+
+export interface TrackerField {
+  key: string;
+  label: string;
+  type: TrackerFieldType;
 }
 
-export interface DehnenImages {
-  laenge_s_nbp?: string;
-  laenge_s_bp?: string;
-  laenge_e_nbp?: string;
-  laenge_e_bp?: string;
+export interface TrackerConfig {
+  name: string;
+  label: string;
+  interval: 'daily' | 'monthly';
+  available_from_day?: number;
+  fields: TrackerField[];
 }
 
-export interface DehnenEntry {
-  month: string; // "YYYY-MM"
-  laenge_s: DehnenMeasurement;
-  laenge_e: DehnenMeasurement;
-  images?: DehnenImages;
+export interface TrackersFile {
+  trackers: TrackerConfig[];
 }
 
-export interface DehnenProgressFile {
-  entries: DehnenEntry[];
+export interface TrackerEntry {
+  id: string;
+  period: string; // "YYYY-MM" or "YYYY-MM-DD"
+  fields: Record<string, number | string | null>;
+}
+
+export interface TrackerFile {
+  entries: TrackerEntry[];
 }
 
 export type MoodEntry = {

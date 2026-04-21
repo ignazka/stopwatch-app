@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stopwatch App
+
+Personal activity and work tracker. Reads session data from a Bash script and visualizes it in a Next.js web app.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Custom Trackers
 
-## Learn More
+Custom trackers let you periodically log any numeric or text values you want to track over time — e.g. body measurements, training metrics, or anything else.
 
-To learn more about Next.js, take a look at the following resources:
+### Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Copy the example config and create your own:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cp config/trackers.example.json config/trackers.json
+```
 
-## Deploy on Vercel
+`config/trackers.json` is gitignored — your tracker names and data stay private.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Config format
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+{
+  "trackers": [
+    {
+      "name": "my-tracker",
+      "label": "My Tracker",
+      "interval": "monthly",
+      "available_from_day": 19,
+      "fields": [
+        { "key": "value_a", "label": "Value A", "type": "number" },
+        { "key": "value_b", "label": "Value B", "type": "number" },
+        { "key": "notes",   "label": "Notes",   "type": "text"   }
+      ]
+    }
+  ]
+}
+```
+
+### Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `name` | yes | URL-safe identifier, e.g. `"my-tracker"` → `/tracker/my-tracker` |
+| `label` | yes | Display name shown in the UI |
+| `interval` | yes | `"monthly"` or `"daily"` |
+| `available_from_day` | no | For monthly trackers: earliest day of the month to submit an entry. Omit to allow entries any time. |
+| `fields` | yes | List of fields to record per entry |
+
+### Field types
+
+- `"number"` — renders a number input (supports decimals)
+- `"text"` — renders a text input
+
+### Accessing a tracker
+
+Each tracker is available at `/tracker/{name}`. Links appear automatically in the top-right corner of the main page.
+
+### Reminder
+
+For monthly trackers, a reminder popup appears automatically on the main page once `available_from_day` is reached and no entry exists for the current month yet. The reminder links directly to the tracker page and can be dismissed.
+
+If `available_from_day` is omitted, no reminder is shown.
+
+### Data storage
+
+Tracker data is saved to `data/tracker-{name}.json` and is gitignored. Back up the `data/` folder manually if needed.
+
+---
+
+## Mood Diary
+
+A built-in mood diary is available at `/mood`. Log your mood on a scale from −10 to +10 with an optional note. Entries are visualized as a line chart over time.
+
+Mood data is stored in `data/mood.json` (gitignored).

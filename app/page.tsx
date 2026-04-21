@@ -10,8 +10,8 @@ import { PeriodNav } from './components/PeriodNav';
 import { WeekView } from './components/WeekView';
 import { MonthView } from './components/MonthView';
 import { isView } from '@/lib/typeGuards';
-import { DehnenReminder } from './components/DehnenReminder';
-import { getDehnenProgress } from '@/lib/dehnen';
+import { TrackerReminder } from './components/TrackerReminder';
+import { getTrackerConfigs, readTrackerEntries } from '@/lib/trackers';
 
 export default async function Home({
   searchParams,
@@ -27,8 +27,15 @@ export default async function Home({
   const guardedView: View = view && isView(view) ? view : 'week';
   const guardedDate = date ?? new Date().toISOString().slice(0, 10);
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const hasEntryThisMonth = getDehnenProgress().entries.some((e) => e.month === currentMonth);
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const currentDay = now.getDate();
+  const trackerConfigs = getTrackerConfigs();
+  const missingTrackers = trackerConfigs
+    .filter((t) => t.interval === 'monthly')
+    .filter((t) => t.available_from_day == null || currentDay >= t.available_from_day)
+    .filter((t) => !readTrackerEntries(t.name).entries.some((e) => e.period === currentMonth))
+    .map((t) => ({ name: t.name, label: t.label }));
 
   const sessionsRAW = getSessions();
   const sessionTypesRAW = getSessionTypes();
@@ -44,10 +51,14 @@ export default async function Home({
   const sortedArrayByDate = Object.keys(groupedSessionsByDate).sort().reverse();
   return (
     <main className='flex flex-col w-full flex-wrap items-center  p-10 bg-zinc-950 font-heading'>
-      <DehnenReminder hasEntryThisMonth={hasEntryThisMonth} />
+      <TrackerReminder missing={missingTrackers} />
       <div className="w-full flex justify-end gap-4 mb-4">
         <a href="/mood" className="text-zinc-500 hover:text-zinc-300 text-sm font-mono">Stimmung →</a>
-        <a href="/dehnen" className="text-zinc-500 hover:text-zinc-300 text-sm font-mono">Dehnen →</a>
+        {trackerConfigs.map((t) => (
+          <a key={t.name} href={`/tracker/${t.name}`} className="text-zinc-500 hover:text-zinc-300 text-sm font-mono">
+            {t.label} →
+          </a>
+        ))}
       </div>
       <Timer types={sessionTypesRAW} />
       <div className='pb-5'>
