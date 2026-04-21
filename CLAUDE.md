@@ -143,15 +143,36 @@ One entry per completed step. Each entry:
 - [x] Meta-Felder erfassen — Formular je nach Tag (analog zu session-types.json im Script)
 - [x] Pause/Resume im Browser-Timer
 - [x] Note-Eingabe im Timer
+- [x] Stimmungstagebuch — Skala -10 bis +10, Chart, History (`app/mood/`)
+- [x] Dehnen-Tracking — Monatliche Fortschrittsmessung (`app/dehnen/`)
 - [ ] Dashboard: Wochen- und Monatsansicht (Tabs: Tag / Woche / Monat, Vor/Zurück-Navigation)
   - Wochenansicht: Gesamtzeit pro Tag, Wochensumme
   - Monatsansicht: Gesamtzeit pro Woche, Monatssumme
 - [ ] Work-Report: Gesamtstunden + Issue-Liste pro Kunde (later)
 - [ ] PDF-Export: Monatsübersicht + Detailliste pro Kunde (later)
-- [ ] Charts (recharts, later)
 - [ ] Pomodoro (later)
 - [ ] GitHub-Anbindung für Issue-Namen (later)
 - [ ] PWA setup (manifest + service worker, later)
+
+---
+
+## Roadmap
+
+### Stimmungstagebuch — Verbesserungen
+- [ ] Nulllinie bei y=0 im Chart (gestrichelt)
+- [ ] Chart-Linie grün/rot je nach Vorzeichen (recharts `linearGradient`)
+- [ ] Datum manuell wählbar beim Eintrag (für nachträgliche Einträge)
+- [ ] Wochendurchschnitt im Chart statt Einzelpunkte
+- [ ] Mood-Streak — wie viele Tage in Folge mit Eintrag
+
+### Korrelationen
+- [ ] Mood-Wert neben Arbeitsstunden desselben Tages vergleichen
+- [ ] Auswertung: viel Arbeit = bessere/schlechtere Stimmung?
+
+### Weitere Tracking-Ideen
+- [ ] Schlaf — `tag: "schlafen"`, meta: Qualität (1–5), Dauer → Trend-Chart
+- [ ] Lesen — meta: Buchtitel, Seiten → Stunden pro Buch
+- [ ] Ausgaben — Kategorie + Betrag → Monatsübersicht
 
 ---
 
