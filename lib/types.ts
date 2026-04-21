@@ -60,3 +60,15 @@ export interface DehnenEntry {
 export interface DehnenProgressFile {
   entries: DehnenEntry[];
 }
+
+export type MoodEntry = {
+  id: string;
+  date: string; // "YYYY-MM-DD"
+  time: string; // "HH:MM:SS"
+  mood: number; // -10–10
+  note: string | null;
+};
+
+export interface MoodFile {
+  entries: MoodEntry[];
+}

@@ -45,7 +45,8 @@ export default async function Home({
   return (
     <main className='flex flex-col w-full flex-wrap items-center  p-10 bg-zinc-950 font-heading'>
       <DehnenReminder hasEntryThisMonth={hasEntryThisMonth} />
-      <div className="w-full flex justify-end mb-4">
+      <div className="w-full flex justify-end gap-4 mb-4">
+        <a href="/mood" className="text-zinc-500 hover:text-zinc-300 text-sm font-mono">Stimmung →</a>
         <a href="/dehnen" className="text-zinc-500 hover:text-zinc-300 text-sm font-mono">Dehnen →</a>
       </div>
       <Timer types={sessionTypesRAW} />
