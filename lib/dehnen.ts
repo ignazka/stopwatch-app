@@ -12,5 +12,16 @@ export function getDehnenProgress(): DehnenProgressFile {
 }
 
 export function saveDehnenProgress(data: DehnenProgressFile): void {
-  fs.writeFileSync(DATA_PATH_DEHNEN, JSON.stringify(data, null, 2));
+  fs.mkdirSync(path.dirname(DATA_PATH_DEHNEN), { recursive: true });
+
+  if (!fs.existsSync(DATA_PATH_DEHNEN)) {
+    const defaultData: DehnenProgressFile = { entries: [] };
+    fs.writeFileSync(
+      DATA_PATH_DEHNEN,
+      JSON.stringify(defaultData, null, 2),
+      'utf-8',
+    );
+  }
+
+  fs.writeFileSync(DATA_PATH_DEHNEN, JSON.stringify(data, null, 2), 'utf-8');
 }
